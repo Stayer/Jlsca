@@ -44,9 +44,9 @@ function bytes(words::UInt32...)
 
     return res
 end
-⊻
+
 word(a::UInt8, b::UInt8, c::UInt8, d::UInt8) = (UInt32(a) << 24) | (UInt32(b) << 16) | (UInt32(c) << 8) | d
-xtime(x::UInt8) = x << 1  (x >> 7 == 1 ? 0x1b : 0x0)
+xtime(x::UInt8) = x << 1 ⊻ (x >> 7 == 1 ? 0x1b : 0x0)
 
 RotWord(x::UInt32) = (x >> 24) | (x << 8)
 

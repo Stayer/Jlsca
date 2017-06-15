@@ -16,8 +16,8 @@ export printParameters,getParameters
 export Direction,Phase
 export getNumberOfCandidates
 
-abstract Analysis
-abstract NonIncrementalAnalysis <: Analysis
+abstract type Analysis end
+abstract type NonIncrementalAnalysis <: Analysis end
 
 # two types of analysis methods: DPA and LRA
 type DPA <: NonIncrementalAnalysis
@@ -75,7 +75,7 @@ getNrLeakageFunctions(a::LRA) = 1
 getNrLeakageFunctions(a::DPA) = length(a.leakageFunctions)
 getNrLeakageFunctions(a::IncrementalCPA) = length(a.leakageFunctions)
 
-abstract Attack
+abstract type Attack end
 
 # currently supported: LRA and DPA
 

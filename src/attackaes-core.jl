@@ -13,7 +13,7 @@ export AesSboxAttack,AesMCAttack,AesKeyLength,AesMode
 for s in instances(AesMode); @eval export $(Symbol(s)); end
 for s in instances(AesKeyLength); @eval export $(Symbol(s)); end
 
-abstract AesAttack <: Attack
+abstract type AesAttack <: Attack end
 
 # two types of attacks: sbox or mixcolumn
 type AesSboxAttack <: AesAttack
@@ -86,7 +86,7 @@ function toShortString(params::Union{AesSboxAttack,AesMCAttack})
 # target functions
 function invMcOut(a::AesMCAttack, x::UInt8, keyByte::UInt8, position::Int, constant::UInt8)
     mcIn = fill(constant, 4)
-    mcIn[position] = a.invsbox[(x $ keyByte) + 1]
+    mcIn[position] = a.invsbox[(x ⊻ keyByte) + 1]
     mcOut = Aes.InvMixColumn(mcIn)
     ret::UInt32 = 0
     for i in 1:4
@@ -108,7 +108,7 @@ end
 
 function mcOut(a::AesMCAttack, x::UInt8, keyByte::UInt8, position::Int, constant::UInt8)
     mcIn = fill(constant, 4)
-    mcIn[position] = a.sbox[(x $ keyByte) + 1]
+    mcIn[position] = a.sbox[(x ⊻ keyByte) + 1]
     mcOut = Aes.MixColumn(mcIn)
     ret::UInt32 = 0
     for i in 1:4
@@ -130,8 +130,8 @@ end
 
 function mcOutXORIn(a::AesMCAttack, x::UInt8, keyByte::UInt8, position::Int, constant::UInt8)
     mcIn = fill(constant, 4)
-    mcIn[position] = a.sbox[(x $ keyByte) + 1]
-    mcOut = Aes.MixColumn(mcIn) $ mcIn
+    mcIn[position] = a.sbox[(x ⊻ keyByte) + 1]
+    mcOut = Aes.MixColumn(mcIn) ⊻ mcIn
     ret::UInt32 = 0
     for i in 1:4
       ret <<= 8
@@ -151,41 +151,41 @@ function mcOutXORIn(a::AesMCAttack, data::Array{UInt8}, dataColumn, keyByte::UIn
 end
 
 function sboxOut(a::AesSboxAttack, data::UInt8, dataColumn::Int, keyBytes::Vector{UInt8})
-    return map(x -> a.sbox[(data $ x) + 1], keyBytes)
+    return map(x -> a.sbox[(data ⊻ x) + 1], keyBytes)
 end
 
 function sboxOut(a::AesSboxAttack, data::Array{UInt8}, dataColumn::Int, keyByte::UInt8)
-    ret = map(x -> a.sbox[(x $ keyByte) + 1], data)
+    ret = map(x -> a.sbox[(x ⊻ keyByte) + 1], data)
     return ret
 end
 
 function invSboxOut(a::AesSboxAttack, data::UInt8, dataColumn::Int, keyBytes::Vector{UInt8})
-    ret = map(x -> a.invsbox[(data $ x) + 1], keyBytes)
+    ret = map(x -> a.invsbox[(data ⊻ x) + 1], keyBytes)
     return ret
 end
 
 function invSboxOut(a::AesSboxAttack, data::Array{UInt8}, dataColumn::Int, keyByte::UInt8)
-    ret = map(x -> a.invsbox[(x $ keyByte) + 1], data)
+    ret = map(x -> a.invsbox[(x ⊻ keyByte) + 1], data)
     return ret
 end
 
 function sboxOutXORIn(a::AesSboxAttack, data::UInt8, dataColumn::Int, keyBytes::Vector{UInt8})
-    ret = map(keyByte -> data $ keyByte $ a.sbox[(data $ keyByte) + 1], keyBytes)
+    ret = map(keyByte -> data ⊻ keyByte ⊻ a.sbox[(data ⊻ keyByte) + 1], keyBytes)
     return ret
 end
 
 function sboxOutXORIn(a::AesSboxAttack, data::Array{UInt8}, dataColumn::Int, keyByte::UInt8)
-    ret = map(x -> x $ keyByte $ a.sbox[(x $ keyByte) + 1], data)
+    ret = map(x -> x ⊻ keyByte ⊻ a.sbox[(x ⊻ keyByte) + 1], data)
     return ret
 end
 
 function invSboxOutXORIn(a::AesSboxAttack, data::UInt8, dataColumn::Int, keyBytes::Vector{UInt8})
-    ret = map(keyByte -> data $ keyByte $ a.invsbox[(data $ keyByte) + 1], keyBytes)
+    ret = map(keyByte -> data ⊻ keyByte ⊻ a.invsbox[(data ⊻ keyByte) + 1], keyBytes)
     return ret
 end
 
 function invSboxOutXORIn(a::AesSboxAttack, data::Array{UInt8}, dataColumn::Int, keyByte::UInt8)
-    ret = map(x -> x $ keyByte $ a.invsbox[(x $ keyByte) + 1], data)
+    ret = map(x -> x ⊻ keyByte ⊻ a.invsbox[(x ⊻ keyByte) + 1], data)
     return ret
 end
 

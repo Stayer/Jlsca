@@ -16,7 +16,7 @@ for s in instances(DesTargetType); @eval export $(Symbol(s)); end
 const left = 1:32
 const right = 33:64
 
-abstract DesAttack <: Attack
+abstract type DesAttack <: Attack end
 
 type DesSboxAttack <: DesAttack
   mode::DesMode
@@ -97,36 +97,36 @@ end
 
 # works on single data byte, vector of keys
 function desSboxOut(sixbits::Union{UInt16, UInt8}, sbidx::Int, kbs::Vector{UInt8})
-  return map(i -> Sbox(sbidx)[i + 1], getIdx((sixbits & 0x3f) $ kbs))
+  return map(i -> Sbox(sbidx)[i + 1], getIdx((sixbits & 0x3f) ⊻ kbs))
 end
 
 # works on columns of data
 function desSboxOut(sixbits::Union{Vector{UInt16}, Vector{UInt8}}, sbidx::Int, kb::UInt8)
-  return map(i -> Sbox(sbidx)[i + 1], getIdx((sixbits & 0x3f) $ kb))
+  return map(i -> Sbox(sbidx)[i + 1], getIdx((sixbits & 0x3f) ⊻ kb))
 end
 
 # works on single data byte, vector of keys
 function desSboxOutXORin(sixbits::Union{UInt16, UInt8}, sbidx::Int, kbs::Vector{UInt8})
-  inp =  ((sixbits & 0x3f) $ kbs) & 0xf
+  inp =  ((sixbits & 0x3f) ⊻ kbs) & 0xf
   outp = desSboxOut(sixbits,sbidx,kbs)
-  return inp $ outp
+  return inp ⊻ outp
 end
 
 # works on columns of data
 function desSboxOutXORin(sixbits::Union{Vector{UInt16}, Vector{UInt8}}, sbidx::Int, kb::UInt8)
-  inp =  ((sixbits & 0x3f) $ kb) & 0xf
+  inp =  ((sixbits & 0x3f) ⊻ kb) & 0xf
   outp = desSboxOut(sixbits,sbidx,kb)
-  return inp $ outp
+  return inp ⊻ outp
 end
 
 # works on single data byte, vector of keys
 function roundOut(tenbits::UInt16, sbidx::Int, kbs::Vector{UInt8})
-  return desSboxOut(tenbits, sbidx, kbs) $ (tenbits >> 6)
+  return desSboxOut(tenbits, sbidx, kbs) ⊻ (tenbits >> 6)
 end
 
 # works on columns of data
 function roundOut(tenbits::Vector{UInt16}, sbidx::Int, kb::UInt8)
-  return desSboxOut(tenbits, sbidx, kb) $ (tenbits .>> 6)
+  return desSboxOut(tenbits, sbidx, kb) ⊻ (tenbits .>> 6)
 end
 
 # round functions
@@ -154,7 +154,7 @@ end
 # works on rows of data, returns either a vector of UInt8, or UInt16
 function round2(input::Vector{UInt8}, rk1::BitVector, params::DesSboxAttack)
   state = IP(toBits(input))
-  state[1:64] = [state[right]; f(state[right],rk1) $ state[left]]
+  state[1:64] = [state[right]; f(state[right],rk1) ⊻ state[left]]
 
   if params.targetType == ROUNDOUT
     invplefts = toNibbles(invP(state[left]))[params.keyByteOffsets]

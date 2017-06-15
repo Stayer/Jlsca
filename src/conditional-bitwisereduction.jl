@@ -104,12 +104,12 @@ function add(c::CondReduce, trs::Trace, traceIdx::Int)
     end
 
     reftrace = getSamplesCached(c, idx, val)
-    c.mask[idx][:] &= !(reftrace $ get(samples))
+    c.mask[idx][:] &= !(reftrace ⊻ get(samples))
 
     # blocks = length(c.mask[idx].chunks)
 
     # for i in 1:blocks
-    #   c.mask[idx].chunks[i] &= ~(cachedreftrace.chunks[i] $ cachedsamples.chunks[i]) 
+    #   c.mask[idx].chunks[i] &= ~(cachedreftrace.chunks[i] ⊻ cachedsamples.chunks[i]) 
     # end
   end
 
@@ -133,7 +133,7 @@ function merge(this::CondReduce, other::CondReduce)
             cachedreftrace = getSamples(this.trs, other.traceIdx[idx][val])
             cachedsamples = getSamples(this.trs, this.traceIdx[idx][val])
 
-            this.mask[idx][:] &= !(cachedreftrace $ cachedsamples)
+            this.mask[idx][:] &= !(cachedreftrace ⊻ cachedsamples)
           end
         else
           cachedsamples = getSamples(this.trs, other.traceIdx[idx][val])

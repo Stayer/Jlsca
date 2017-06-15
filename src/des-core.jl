@@ -275,14 +275,14 @@ function f(R::BitVector, K::BitVector, round=0, leak::Function=(x,y)->y)
 
 	ret = BitVector(32)
 
-	tmp = E(R) $ K
+	tmp = xor(E(R), K)
 	tmp = leak(@sprintf("r%d.keyadd", round), tmp)
 	for i in 1:8
 		output = (i-1)*4
 		input =  (i-1)*6
 		ret[output+1:output+4] = Sbox(tmp[input+1:input+6], Sbox(i))
 		leak(@sprintf("r%d.sbox%d", round, i), ret[output+1:output+4])
-		leak(@sprintf("r%d.sboxXORout%d", round, i), ret[output+1:output+4] $ tmp[input+3:input+6])
+		leak(@sprintf("r%d.sboxXORout%d", round, i), ret[output+1:output+4] ⊻ tmp[input+3:input+6])
 	end
 	ret = leak(@sprintf("r%d.sbox", round), ret)
 
@@ -309,9 +309,9 @@ function Cipher(input::Vector{UInt8}, cb::BitVector, leak::Function=(x,y)->y, en
 		state = leak(@sprintf("r%d.start", round), state)
 		prevstate = state[1:64]
 		fout = f(state[right],getK(cb,round), round, leak)
-		state[1:64] = [state[right]; fout $ state[left]]
+		state[1:64] = [state[right]; fout ⊻ state[left]]
 		leak(@sprintf("r%d.roundF", round), invP(state[right]))
-		leak(@sprintf("r%d.roundinXORout", round), invP(state $ prevstate))
+		leak(@sprintf("r%d.roundinXORout", round), invP(state ⊻ prevstate))
 	end
 
 	state[1:64] = [state[right]; state[left]]

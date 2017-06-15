@@ -119,7 +119,7 @@ function gf8_mul(x::UInt8, y::UInt8)
 
     while e <= y
         if (y & e) == e
-            ret $= x
+            ret ⊻= x
         end
         x = xtime(x)
         e <<= 1
@@ -156,7 +156,7 @@ function gf2_dot(x::BitVector, y::BitVector)
     res::Bool = false
 
     for i in 1:length(x)
-        res $= (x[i] & y[i])
+        res ⊻= (x[i] & y[i])
     end
 
     return res

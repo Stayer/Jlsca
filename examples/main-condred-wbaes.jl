@@ -13,7 +13,7 @@ function gf2dot(x::UInt8, y::UInt8)
   ret::UInt8 = 0
 
   for i in 0:7
-    ret $= ((x >> i) & 1) & ((y >> i) & 1)
+    ret ⊻= ((x >> i) & 1) & ((y >> i) & 1)
   end
 
   return ret

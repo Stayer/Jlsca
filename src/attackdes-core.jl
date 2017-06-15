@@ -138,7 +138,7 @@ function round1(input::Vector{UInt8}, params::DesSboxAttack)
   if params.targetType == ROUNDOUT
     if params.xor
       # does the xor for roundOut with input (that's why there's no roundOutXORIn)
-      invplefts $= toNibbles(invP(ip[right]))[params.keyByteOffsets]
+      invplefts ⊻= toNibbles(invP(ip[right]))[params.keyByteOffsets]
     end
   end
 
@@ -159,7 +159,7 @@ function round2(input::Vector{UInt8}, rk1::BitVector, params::DesSboxAttack)
   if params.targetType == ROUNDOUT
     invplefts = toNibbles(invP(state[left]))[params.keyByteOffsets]
     if params.xor
-      invplefts $= toNibbles(invP(state[right]))[params.keyByteOffsets]
+      invplefts ⊻= toNibbles(invP(state[right]))[params.keyByteOffsets]
     end
   end
 
